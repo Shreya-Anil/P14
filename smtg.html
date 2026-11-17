@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillBridge Knowledge Quiz</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #5b4baf;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            background-color: #e5e5e5;
+            height: 9px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: #7057d9;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #questionNumber {
+            color: #7057d9;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #question {
+            color: #222;
+            font-size: 21px;
+            margin-bottom: 22px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #f2f2ff;
+            color: #222222;
+            border: 2px solid #c9c3f5;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .option:hover {
+            background-color: #e3deff;
+            border-color: #7057d9;
+        }
+
+        .option.selected {
+            background-color: #7057d9;
+            color: white;
+            border-color: #7057d9;
+        }
+
+        .option:disabled {
+            cursor: default;
+        }
+
+        #feedback {
+            margin-top: 18px;
+            font-weight: bold;
+            min-height: 22px;
+        }
+
+        .next-btn, .restart-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 22px;
+            background-color: #7057d9;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .next-btn:hover, .restart-btn:hover {
+            background-color: #5740bd;
+        }
+
+        .next-btn:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        #result {
+            display: none;
+            text-align: center;
+        }
+
+        #result h2 {
+            color: #5b4baf;
+        }
+
+        #finalScore {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 500px) {
+            .quiz-container {
+                padding: 20px;
+            }
+
+            #question {
+                font-size: 18px;
+            }
+
+            .option {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="quiz-container">
+
+        <div id="quiz">
+
+            <h1>SkillBridge Quiz</h1>
+            <p class="subtitle">Test your Web Technology knowledge!</p>
+
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <p id="questionNumber">Question 1 of 5</p>
+
+            <h2 id="question">Question appears here</h2>
+
+            <div class="options" id="options"></div>
+
+            <p id="feedback"></p>
+
+            <button class="next-btn" id="nextBtn"
+                onclick="nextQuestion()" disabled>
+                Next Question
+            </button>
+
+        </div>
+
+        <div id="result">
+            <h1>Quiz Completed!</h1>
+            <h2>Great Job!</h2>
+            <p id="finalScore"></p>
+            <button class="restart-btn" onclick="restartQuiz()">
+                Try Again
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+
+        const questions = [
+            {
+                question: "1. What does HTML stand for?",
+                options: [
+                    "Hyper Text Markup Language",
+                    "High Text Machine Language",
+                    "Hyperlinks Text Management Language",
+                    "Home Tool Markup Language"
+                ],
+                answer: 0
+            },
+            {
+                question: "2. Which language is used to style webpages?",
+                options: [
+                    "Python",
+                    "CSS",
+                    "C Programming",
+                    "Java"
+                ],
+                answer: 1
+            },
+            {
+                question: "3. Which language makes webpages interactive?",
+                options: [
+                    "HTML",
+                    "CSS",
+                    "JavaScript",
+                    "SQL"
+                ],
+                answer: 2
+            },
+            {
+                question: "4. Which HTML tag is used to create a hyperlink?",
+                options: [
+                    "<img>",
+                    "<p>",
+                    "<a>",
+                    "<h1>"
+                ],
+                answer: 2
+            },
+            {
+                question: "5. Which JavaScript method selects an element by its ID?",
+                options: [
+                    "getElementById()",
+                    "getElement()",
+                    "selectByName()",
+                    "findElement()"
+                ],
+                answer: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = -1;
+
+        function displayQuestion() {
+
+            selectedAnswer = -1;
+
+            document.getElementById("feedback").innerHTML = "";
+            document.getElementById("nextBtn").disabled = true;
+
+            let q = questions[currentQuestion];
+
+            document.getElementById("questionNumber").innerHTML =
+                "Question " + (currentQuestion + 1) +
+                " of " + questions.length;
+
+            document.getElementById("question").innerHTML = q.question;
+
+            document.getElementById("progressBar").style.width =
+                ((currentQuestion + 1) / questions.length * 100) + "%";
+
+            let optionsDiv = document.getElementById("options");
+
+            // Clear previous options
+            optionsDiv.innerHTML = "";
+
+            // Create visible answer buttons
+            q.options.forEach(function(option, index) {
+
+                let button = document.createElement("button");
+
+                button.type = "button";
+                button.className = "option";
+                button.textContent = option;
+
+                button.onclick = function() {
+                    selectAnswer(index);
+                };
+
+                optionsDiv.appendChild(button);
+
+            });
+
+            if (currentQuestion === questions.length - 1) {
+                document.getElementById("nextBtn").innerHTML =
+                    "Finish Quiz";
+            } else {
+                document.getElementById("nextBtn").innerHTML =
+                    "Next Question";
+            }
+        }
+
+        function selectAnswer(index) {
+
+            selectedAnswer = index;
+
+            let buttons = document.querySelectorAll(".option");
+
+            buttons.forEach(function(button, i) {
+
+                button.classList.remove("selected");
+
+                if (i === index) {
+                    button.classList.add("selected");
+                }
+
+            });
+
+            document.getElementById("nextBtn").disabled = false;
+            document.getElementById("feedback").innerHTML =
+                "Answer selected. Click Next to continue.";
+
+            document.getElementById("feedback").style.color = "#555";
+        }
+
+        function nextQuestion() {
+
+            if (selectedAnswer === -1) {
+                return;
+            }
+
+            if (selectedAnswer === questions[currentQuestion].answer) {
+                score++;
+            }
+
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                displayQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // Display final score
+        function showResult() {
+
+            document.getElementById("quiz").style.display = "none";
+            document.getElementById("result").style.display = "block";
+
+            document.getElementById("finalScore").innerHTML =
+                "Your Score: " + score + " / " + questions.length;
+        }
+
+        function restartQuiz() {
+
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = -1;
+
+            document.getElementById("quiz").style.display = "block";
+            document.getElementById("result").style.display = "none";
+
+            displayQuestion();
+        }
+
+        displayQuestion();
+
+    </script>
+
+</body>
+</html>
